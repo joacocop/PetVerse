@@ -133,22 +133,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
-                        onPressed: auth.isBusy ? null : () => _social(true),
+                        onPressed: auth.isBusy ? null : _social,
                         icon: const Icon(Icons.g_mobiledata, size: 28),
                         label: Text(
                           isDemo
                               ? 'Probar demo con Google'
                               : 'Continuar con Google',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      OutlinedButton.icon(
-                        onPressed: auth.isBusy ? null : () => _social(false),
-                        icon: const Icon(Icons.apple),
-                        label: Text(
-                          isDemo
-                              ? 'Probar demo con Apple'
-                              : 'Continuar con Apple',
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -199,13 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
         );
   }
 
-  Future<void> _social(bool google) async {
-    final auth = context.read<AuthProvider>();
-    if (google) {
-      await auth.signInWithGoogle();
-    } else {
-      await auth.signInWithApple();
-    }
+  Future<void> _social() async {
+    await context.read<AuthProvider>().signInWithGoogle();
   }
 
   @override

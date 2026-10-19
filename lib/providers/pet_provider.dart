@@ -8,7 +8,7 @@ import '../services/pet_service.dart';
 /// Estado global de la lista de mascotas del usuario.
 class PetProvider extends ChangeNotifier {
   /// Crea el provider con un repositorio de mascotas.
-  PetProvider({required PetService service}) : _service = service;
+  PetProvider({required this._service});
 
   final PetService _service;
   StreamSubscription<List<Pet>>? _subscription;

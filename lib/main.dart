@@ -4,11 +4,13 @@ import 'package:provider/provider.dart';
 import 'core/firebase/firebase_bootstrap.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
+import 'providers/feed_provider.dart';
 import 'providers/pet_provider.dart';
 import 'providers/profile_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
+import 'services/feed_service.dart';
 import 'services/pet_service.dart';
 import 'services/profile_service.dart';
 
@@ -47,6 +49,12 @@ class PetVerseApp extends StatelessWidget {
           create: (_) => PetProvider(
             service: firebaseReady ? FirestorePetService() : DemoPetService(),
           ),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, FeedProvider>(
+          create: (_) => FeedProvider(
+            service: firebaseReady ? FirestoreFeedService() : DemoFeedService(),
+          ),
+          update: (_, auth, feed) => feed!..bindUser(auth.user?.id),
         ),
       ],
       child: MaterialApp(

@@ -6,7 +6,7 @@ import '../services/profile_service.dart';
 /// Estado global del perfil editable.
 class ProfileProvider extends ChangeNotifier {
   /// Crea el provider con un repositorio de perfiles.
-  ProfileProvider({required ProfileService service}) : _service = service;
+  ProfileProvider({required this._service});
 
   final ProfileService _service;
   UserProfile? _profile;

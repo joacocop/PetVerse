@@ -25,9 +25,6 @@ abstract interface class AuthService {
   /// Inicia sesión con Google.
   Future<AppUser?> signInWithGoogle();
 
-  /// Inicia sesión con Apple.
-  Future<AppUser?> signInWithApple();
-
   /// Cierra la sesión actual.
   Future<void> signOut();
 }
@@ -53,7 +50,8 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
-  Stream<AppUser?> get authStateChanges => _auth.authStateChanges().map(_toAppUser);
+  Stream<AppUser?> get authStateChanges =>
+      _auth.authStateChanges().map(_toAppUser);
 
   @override
   Future<AppUser?> signInWithEmail(String email, String password) async {
@@ -86,12 +84,6 @@ class FirebaseAuthService implements AuthService {
   @override
   Future<AppUser?> signInWithGoogle() async {
     final credential = await _auth.signInWithPopup(GoogleAuthProvider());
-    return _toAppUser(credential.user);
-  }
-
-  @override
-  Future<AppUser?> signInWithApple() async {
-    final credential = await _auth.signInWithPopup(OAuthProvider('apple.com'));
     return _toAppUser(credential.user);
   }
 
@@ -160,17 +152,6 @@ class DemoAuthService implements AuthService {
       id: 'demo_google_user',
       email: 'google@demo.petverse',
       displayName: 'Usuario Google',
-    );
-    _changes.add(_currentUser);
-    return _currentUser;
-  }
-
-  @override
-  Future<AppUser?> signInWithApple() async {
-    _currentUser = const AppUser(
-      id: 'demo_apple_user',
-      email: 'apple@demo.petverse',
-      displayName: 'Usuario Apple',
     );
     _changes.add(_currentUser);
     return _currentUser;

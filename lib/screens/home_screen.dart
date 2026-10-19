@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../core/constants/app_constants.dart';
 import '../providers/auth_provider.dart';
+import 'feed_screen.dart';
 import 'profile_screen.dart';
 
 /// Contenedor principal después de autenticarse.
@@ -39,16 +40,13 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _selectedIndex,
         children: [
           ProfileScreen(user: user),
-          const _ComingSoonScreen(
-            title: 'Tu feed',
-            icon: Icons.dynamic_feed_outlined,
-            message: 'El feed de publicaciones llega en PV4.',
-          ),
+          FeedScreen(user: user),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+        onDestinationSelected: (index) =>
+            setState(() => _selectedIndex = index),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.person_outline),
@@ -61,37 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Feed',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ComingSoonScreen extends StatelessWidget {
-  const _ComingSoonScreen({
-    required this.title,
-    required this.icon,
-    required this.message,
-  });
-
-  final String title;
-  final IconData icon;
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 72, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(title, style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
-          ],
-        ),
       ),
     );
   }

@@ -339,7 +339,7 @@ class _EmptyPets extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(18),
       ),
       child: const Column(
@@ -371,14 +371,15 @@ class _PetCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black.withOpacity(0.08)),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundImage: pet.photos.isEmpty ? null : NetworkImage(pet.photos.first),
+            backgroundImage:
+                pet.photos.isEmpty ? null : NetworkImage(pet.photos.first),
             child: pet.photos.isEmpty ? const Icon(Icons.pets) : null,
           ),
           const SizedBox(width: 12),
@@ -394,7 +395,8 @@ class _PetCard extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
-                Text('${pet.typeLabel} · ${pet.breed.isEmpty ? 'Sin raza' : pet.breed}'),
+                Text(
+                    '${pet.typeLabel} · ${pet.breed.isEmpty ? 'Sin raza' : pet.breed}'),
                 Text('${pet.age} años · ${pet.weight.toStringAsFixed(1)} kg'),
               ],
             ),

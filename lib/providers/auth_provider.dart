@@ -9,7 +9,7 @@ import '../services/auth_service.dart';
 /// Estado global de autenticación y sesión.
 class AuthProvider extends ChangeNotifier {
   /// Crea el provider y comienza a escuchar la sesión.
-  AuthProvider({required AuthService service}) : _service = service {
+  AuthProvider({required this._service}) {
     _subscription = _service.authStateChanges.listen((user) {
       _user = user;
       _isInitializing = false;
@@ -67,9 +67,6 @@ class AuthProvider extends ChangeNotifier {
 
   /// Inicia sesión con Google.
   Future<bool> signInWithGoogle() async => _run(_service.signInWithGoogle);
-
-  /// Inicia sesión con Apple.
-  Future<bool> signInWithApple() async => _run(_service.signInWithApple);
 
   /// Cierra la sesión.
   Future<void> signOut() => _service.signOut();

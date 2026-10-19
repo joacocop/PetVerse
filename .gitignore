@@ -18,3 +18,5 @@ firebase-debug.log
 *.iml
 .DS_Store
 Thumbs.db
+**/node_modules/
+ui-debug.log

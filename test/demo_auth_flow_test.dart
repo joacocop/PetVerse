@@ -6,7 +6,6 @@ import 'package:petverse/main.dart';
 void main() {
   for (final (provider, email) in [
     ('Google', 'google@demo.petverse'),
-    ('Apple', 'apple@demo.petverse'),
   ]) {
     testWidgets('La demo de $provider permite entrar y cerrar sesión',
         (tester) async {

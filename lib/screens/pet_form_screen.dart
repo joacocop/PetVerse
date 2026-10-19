@@ -33,11 +33,13 @@ class _PetFormScreenState extends State<PetFormScreen> {
     final pet = widget.pet;
     _nameController = TextEditingController(text: pet?.name ?? '');
     _breedController = TextEditingController(text: pet?.breed ?? '');
-    _ageController = TextEditingController(text: pet == null ? '' : '${pet.age}');
+    _ageController =
+        TextEditingController(text: pet == null ? '' : '${pet.age}');
     _weightController = TextEditingController(
       text: pet == null ? '' : pet.weight.toStringAsFixed(1),
     );
-    _photosController = TextEditingController(text: pet?.photos.join(', ') ?? '');
+    _photosController =
+        TextEditingController(text: pet?.photos.join(', ') ?? '');
     _bioController = TextEditingController(text: pet?.bio ?? '');
     _type = pet?.type ?? PetType.dog;
   }
@@ -47,7 +49,8 @@ class _PetFormScreenState extends State<PetFormScreen> {
     final provider = context.watch<PetProvider>();
     final isEditing = widget.pet != null;
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Editar mascota' : 'Agregar mascota')),
+      appBar:
+          AppBar(title: Text(isEditing ? 'Editar mascota' : 'Agregar mascota')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -62,10 +65,13 @@ class _PetFormScreenState extends State<PetFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        isEditing ? 'Actualiza los datos' : 'Presenta a tu mascota',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        isEditing
+                            ? 'Actualiza los datos'
+                            : 'Presenta a tu mascota',
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -74,13 +80,14 @@ class _PetFormScreenState extends State<PetFormScreen> {
                           labelText: 'Nombre *',
                           prefixIcon: Icon(Icons.pets),
                         ),
-                        validator: (value) => value != null && value.trim().isNotEmpty
-                            ? null
-                            : 'Ingresa un nombre.',
+                        validator: (value) =>
+                            value != null && value.trim().isNotEmpty
+                                ? null
+                                : 'Ingresa un nombre.',
                       ),
                       const SizedBox(height: 14),
                       DropdownButtonFormField<PetType>(
-                        value: _type,
+                        initialValue: _type,
                         decoration: const InputDecoration(
                           labelText: 'Tipo *',
                           prefixIcon: Icon(Icons.category_outlined),
@@ -120,7 +127,9 @@ class _PetFormScreenState extends State<PetFormScreen> {
                               ),
                               validator: (value) {
                                 final age = int.tryParse(value ?? '');
-                                return age != null && age >= 0 ? null : 'Edad inválida.';
+                                return age != null && age >= 0
+                                    ? null
+                                    : 'Edad inválida.';
                               },
                             ),
                           ),
@@ -128,7 +137,9 @@ class _PetFormScreenState extends State<PetFormScreen> {
                           Expanded(
                             child: TextFormField(
                               controller: _weightController,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
                               decoration: const InputDecoration(
                                 labelText: 'Peso (kg) *',
                                 prefixIcon: Icon(Icons.monitor_weight_outlined),
@@ -173,16 +184,19 @@ class _PetFormScreenState extends State<PetFormScreen> {
                         icon: provider.isSaving
                             ? const SizedBox.square(
                                 dimension: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.check),
-                        label: Text(isEditing ? 'Guardar mascota' : 'Agregar mascota'),
+                        label: Text(
+                            isEditing ? 'Guardar mascota' : 'Agregar mascota'),
                       ),
                       if (provider.errorMessage != null) ...[
                         const SizedBox(height: 12),
                         Text(
                           provider.errorMessage!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error),
                         ),
                       ],
                     ],

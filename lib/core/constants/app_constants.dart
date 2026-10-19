@@ -8,6 +8,6 @@ abstract final class AppConstants {
 
   /// Texto mostrado cuando Firebase todavía no está configurado.
   static const demoModeMessage =
-      'Modo demo: Google y Apple usan cuentas ficticias. No se envían correos '
+      'Modo demo: Google usa una cuenta ficticia. No se envían correos '
       'y los datos se borran al recargar.';
 }
