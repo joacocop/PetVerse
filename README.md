@@ -38,18 +38,25 @@ reales. La recuperación de contraseña también es simulada y no envía correos
 
 ## Configurar Firebase Web
 
-La aplicación lee las opciones mediante `--dart-define`, evitando guardar claves
-en el repositorio:
+La aplicación lee las opciones al compilar. Para usar el proyecto Firebase real,
+guardá su configuración web en `config/firebase.local.json` y ejecutá:
 
-```bash
-flutter run -d chrome \
-  --dart-define=FIREBASE_API_KEY=... \
-  --dart-define=FIREBASE_APP_ID=... \
-  --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
-  --dart-define=FIREBASE_PROJECT_ID=... \
-  --dart-define=FIREBASE_AUTH_DOMAIN=... \
-  --dart-define=FIREBASE_STORAGE_BUCKET=...
+```powershell
+flutter run -d chrome --dart-define-from-file=config/firebase.local.json
 ```
+
+El archivo local está excluido de Git. En otra computadora, copiá
+`config/firebase.example.json` como `config/firebase.local.json` y completá los
+valores de la aplicación web registrados en Firebase. El adaptador de opciones
+ya utiliza esos valores, por lo que no hace falta pegar código JavaScript en
+Flutter ni instalar el SDK de npm. También admite `--dart-define` individuales.
+
+Detené la ejecución anterior con `Ctrl+C` antes de arrancar con esta configuración:
+los cambios de configuración necesitan reiniciar la app, no solo recargarla.
+Con Firebase inicializado, el aviso de modo demo desaparece y los botones pasan
+a decir **Continuar con Google** y **Continuar con Apple**. Esto confirma el
+cambio de servicios, pero todavía hay que probar un acceso real y comprobar
+que los datos se guarden y se recuperen desde Firestore.
 
 También se puede ejecutar `flutterfire configure` y reemplazar el adaptador de
 opciones por el archivo generado por FlutterFire.

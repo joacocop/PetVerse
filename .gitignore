@@ -12,6 +12,7 @@ google-services.json
 GoogleService-Info.plist
 firebase-debug.log
 .env
+/config/firebase.local.json
 .idea/
 .vscode/
 *.iml
