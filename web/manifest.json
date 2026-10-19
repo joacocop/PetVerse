@@ -1,0 +1,10 @@
+{
+  "name": "PetVerse",
+  "short_name": "PetVerse",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFFBF8",
+  "theme_color": "#FF6B35",
+  "description": "Red social para mascotas",
+  "orientation": "portrait-primary"
+}
