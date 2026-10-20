@@ -27,12 +27,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(title: const Text('Crear cuenta')),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 400 ? 12 : 24,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 460),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(32),
+                padding: EdgeInsets.all(
+                  MediaQuery.sizeOf(context).width < 400 ? 18 : 32,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -40,9 +44,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       Text(
                         'Únete a PetVerse',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 8),
                       const Text('Crea tu perfil y presenta a tus mascotas.'),
@@ -54,7 +57,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           labelText: 'Nombre',
                           prefixIcon: Icon(Icons.person_outline),
                         ),
-                        validator: (value) => value != null && value.trim().length >= 2
+                        validator: (value) =>
+                            value != null && value.trim().length >= 2
                             ? null
                             : 'Ingresa al menos 2 caracteres.',
                       ),
@@ -66,7 +70,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           labelText: 'Email',
                           prefixIcon: Icon(Icons.email_outlined),
                         ),
-                        validator: (value) => value != null && value.contains('@')
+                        validator: (value) =>
+                            value != null && value.contains('@')
                             ? null
                             : 'Ingresa un email válido.',
                       ),
@@ -110,7 +115,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: auth.isBusy
                             ? const SizedBox.square(
                                 dimension: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Crear cuenta'),
                       ),
@@ -119,7 +126,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Text(
                           auth.errorMessage!,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                         ),
                       ],
                     ],
@@ -138,10 +147,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     await context.read<AuthProvider>().register(
-          _nameController.text,
-          _emailController.text,
-          _passwordController.text,
-        );
+      _nameController.text,
+      _emailController.text,
+      _passwordController.text,
+    );
     if (mounted && context.read<AuthProvider>().user != null) {
       Navigator.of(context).pop();
     }

@@ -9,6 +9,9 @@ import 'providers/pet_provider.dart';
 import 'providers/profile_provider.dart';
 import 'providers/notification_provider.dart';
 import 'services/community_service.dart';
+import 'services/activity_service.dart';
+import 'providers/gamification_provider.dart';
+import 'providers/install_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
@@ -42,6 +45,13 @@ class _PetVerseAppState extends State<PetVerseApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => InstallProvider()),
+        Provider<ActivityService>(
+          create: (_) => firebaseReady
+              ? FirestoreActivityService()
+              : DemoActivityService(),
+          dispose: (_, service) => service.dispose(),
+        ),
         Provider<CommunityService>(
           create: (_) => firebaseReady
               ? FirestoreCommunityService()
@@ -70,10 +80,20 @@ class _PetVerseAppState extends State<PetVerseApp> {
           ),
         ),
         ChangeNotifierProxyProvider<AuthProvider, FeedProvider>(
-          create: (_) => FeedProvider(
-            service: firebaseReady ? FirestoreFeedService() : DemoFeedService(),
+          create: (context) => FeedProvider(
+            service: firebaseReady
+                ? FirestoreFeedService()
+                : DemoFeedService(
+                    activityService:
+                        context.read<ActivityService>() as DemoActivityService,
+                  ),
           ),
           update: (_, auth, feed) => feed!..bindUser(auth.user?.id),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, GamificationProvider>(
+          create: (context) =>
+              GamificationProvider(service: context.read<ActivityService>()),
+          update: (_, auth, game) => game!..bindUser(auth.user?.id),
         ),
       ],
       child: MaterialApp(

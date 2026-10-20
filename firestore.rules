@@ -22,6 +22,19 @@ service cloud.firestore {
         allow read: if isOwner(userId);
         // Solo Admin SDK desde Cloud Functions puede escribir el historial.
       }
+      match /activity/{activityId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['kind','postId','referenceId','createdAt'])
+          && request.resource.data.kind in ['post','like','comment']
+          && request.resource.data.postId is string
+          && request.resource.data.postId.matches('[A-Za-z0-9_-]{1,128}')
+          && request.resource.data.referenceId is string
+          && activityId == request.resource.data.kind + '_' + request.resource.data.postId
+          && request.resource.data.createdAt == request.time
+          && validActivity(userId, request.resource.data);
+        // Ni actualizar, ni borrar: repetir una acción no concede otro crédito.
+      }
     }
 
     match /publicProfiles/{userId} {
@@ -91,6 +104,17 @@ service cloud.firestore {
     function chatMember(chatId) {
       return request.auth != null && request.auth.uid in
         get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+    }
+    function validActivity(uid, data) {
+      let post = getAfter(/databases/$(database)/documents/posts/$(data.postId)).data;
+      return (data.kind == 'post' && post.ownerId == uid
+          && post.createdAt == request.time && data.referenceId == '')
+        || (data.kind == 'like' && post.ownerId != uid
+          && uid in post.likes && data.referenceId == '')
+        || (data.kind == 'comment' && post.ownerId != uid
+          && data.referenceId.matches('[A-Za-z0-9_-]{1,128}')
+          && getAfter(/databases/$(database)/documents/posts/$(data.postId)/comments/$(data.referenceId)).data.userId == uid
+          && getAfter(/databases/$(database)/documents/posts/$(data.postId)/comments/$(data.referenceId)).data.createdAt == request.time);
     }
     function boundedText(value, minimum, maximum) {
       return value is string && value.size() >= minimum && value.size() <= maximum;

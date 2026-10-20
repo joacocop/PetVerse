@@ -3,5 +3,19 @@
     "rules": "firestore.rules"
   },
   "storage": { "rules": "storage.rules" },
-  "functions": [{ "source": "functions", "codebase": "petverse", "runtime": "nodejs22" }]
+  "functions": [{ "source": "functions", "codebase": "petverse", "runtime": "nodejs22" }],
+  "hosting": {
+    "site": "petverse-29db2",
+    "public": "build/web",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "**/*.map"],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }],
+    "headers": [
+      {"source": "**", "headers": [
+        {"key": "Cache-Control", "value": "no-cache"},
+        {"key": "X-Content-Type-Options", "value": "nosniff"},
+        {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
+      ]},
+      {"source": "/app-sw.js", "headers": [{"key": "Service-Worker-Allowed", "value": "/"}]}
+    ]
+  }
 }

@@ -66,13 +66,15 @@ class _ChatsScreenState extends State<ChatsScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(20),
-                child: Row(
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 16,
+                  runSpacing: 12,
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Mensajes',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
+                    Text(
+                      'Mensajes',
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     FilledButton.icon(
                       onPressed: () => showDialog<void>(
@@ -131,7 +133,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          trailing: Text(feedDate(chat.updatedAt)),
+                          trailing: MediaQuery.sizeOf(context).width < 600
+                              ? null
+                              : Text(feedDate(chat.updatedAt)),
                           onTap: () async {
                             try {
                               await openConversation(
@@ -181,7 +185,7 @@ class _PeopleDialogState extends State<_PeopleDialog> {
       title: const Text('Nueva conversación'),
       content: SizedBox(
         width: 420,
-        height: 360,
+        height: MediaQuery.sizeOf(context).height < 550 ? 220 : 360,
         child: Column(
           children: [
             TextField(

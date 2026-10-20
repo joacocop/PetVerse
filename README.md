@@ -23,6 +23,14 @@ Red social para mascotas construida con Flutter Web, Firebase y Provider.
 - PV10: registro FCM voluntario, token por dispositivo, worker web, avisos en primer
   plano e historial; backend de likes/comentarios/mensajes preparado en `functions/`.
   **No hay envío automático real hasta desplegar las funciones (requiere Blaze).**
+- PV11: puntos por publicar (+10), dar like (+2) y comentar (+3), niveles e
+  insignias en Mi perfil. Los créditos son únicos y están protegidos por reglas.
+- PV12: manifest, iconos normales/maskable, instalador contextual y service worker
+  propio con pantalla offline; no cachea contenido privado.
+- PV13: diseños comprobados a 320, 768 y 1440 px; navegación inferior en móvil
+  y tablet, lateral en escritorio, formularios y grillas adaptables.
+- PV14: configuración y script de publicación exclusiva en Firebase Hosting.
+  **Publicación pendiente de autenticar Firebase CLI y verificar la URL real.**
 - Sin configuración de Firebase, los PV funcionan en modo demo con datos
   temporales en memoria, excepto subidas y push, que no se simulan como reales.
 
@@ -153,3 +161,22 @@ comentarios exclusivamente por su autor y snapshots en vivo entre dos clientes.
 La aplicación separa modelos, servicios, providers y pantallas. Los servicios
 de Firebase tienen implementaciones equivalentes en memoria para el modo demo,
 lo que permite validar la navegación y la UI sin inventar credenciales.
+
+## Últimos PV y entrega
+
+Antes de probar PV11 con Firebase, volver a publicar el archivo completo
+`firestore.rules` en la consola: las publicaciones nuevas escriben su crédito
+de puntos junto con el documento. Con reglas anteriores, esa operación se rechaza.
+
+- [Guía PV11-PV14](docs/PV11-PV14.md): puntos, instalación, pruebas y publicación.
+- [Informe técnico en PDF](output/pdf/Informe_tecnico_PetVerse.pdf): requisitos
+  PV1-PV14, arquitectura, modelo de datos, seguridad, pruebas, capturas y despliegue.
+- [Informe editable en Word](output/doc/Informe_tecnico_PetVerse.docx): versión
+  editable del mismo contenido. El PDF es la referencia de paginación revisada.
+- Aplicación publicada: [PetVerse](https://petverse-29db2.web.app/).
+  Hosting y sus recursos principales se verificaron por HTTPS el 20/10/2026.
+  Storage y notificaciones automáticas conservan las restricciones documentadas.
+- [Guía PV7-PV10](docs/PV7-PV10.md): configuración de los servicios anteriores.
+
+Los cambios no se commitean automáticamente. No se publica en Vercel y no se
+activa facturación como parte de estos pasos.

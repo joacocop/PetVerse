@@ -74,6 +74,38 @@ test('Directorio mínimo público; emails, tokens e historial de avisos privados
   await assertFails(getDocs(collection(bob, 'users/alice/notifications')));
 });
 
+const credit = (kind, postId = 'p1', referenceId = '') => ({
+  kind, postId, referenceId, createdAt: serverTimestamp(),
+});
+test('Gamificación: fuentes verificadas, importes no editables y créditos inmutables', async () => {
+  const alice = db('alice'); const bob = db('bob');
+  const publish = writeBatch(alice);
+  publish.set(doc(alice, 'posts/p2'), post());
+  publish.set(doc(alice, 'users/alice/activity/post_p2'), credit('post', 'p2'));
+  await assertSucceeds(publish.commit());
+  await assertFails(setDoc(doc(bob, 'users/bob/activity/post_p2'), credit('post', 'p2')));
+  await assertFails(setDoc(doc(bob, 'users/bob/activity/post_missing'), credit('post', 'missing')));
+  await assertFails(setDoc(doc(alice, 'users/alice/activity/like_p1'), credit('like')));
+  await assertFails(setDoc(doc(bob, 'users/bob/activity/like_p1'), credit('like')));
+  const like = writeBatch(bob);
+  like.update(doc(bob, 'posts/p1'), { likes: arrayUnion('bob') });
+  like.set(doc(bob, 'users/bob/activity/like_p1'), credit('like'));
+  await assertSucceeds(like.commit());
+  await assertFails(setDoc(doc(bob, 'users/bob/activity/like_p1'), credit('like')));
+  await assertFails(setDoc(doc(bob, 'users/bob/activity/forged_id'), credit('like')));
+  await assertFails(setDoc(doc(bob, 'users/bob/activity/like_p2'), { ...credit('like', 'p2'), points: 1000000 }));
+  await assertFails(updateDoc(doc(bob, 'users/bob/activity/like_p1'), { kind: 'post' }));
+  await assertFails(deleteDoc(doc(bob, 'users/bob/activity/like_p1')));
+  await assertFails(getDocs(collection(alice, 'users/bob/activity')));
+  const commentBatch = writeBatch(bob);
+  commentBatch.set(doc(bob, 'posts/p1/comments/rewarded'), comment('bob'));
+  commentBatch.set(doc(bob, 'users/bob/activity/comment_p1'), credit('comment', 'p1', 'rewarded'));
+  await assertSucceeds(commentBatch.commit());
+  await assertFails(setDoc(doc(alice, 'users/alice/activity/comment_p1'), credit('comment', 'p1', 'rewarded')));
+  await assertSucceeds(deleteDoc(doc(bob, 'posts/p1/comments/rewarded')));
+  assert.equal((await getDocs(collection(bob, 'users/bob/activity'))).size, 2);
+});
+
 test('Chats privados: solo dos participantes, remitente real y escritura atómica del historial', async () => {
   const alice = db('alice'); const bob = db('bob'); const mallory = db('mallory');
   await assertSucceeds(getDoc(doc(alice, 'chats/c1')));

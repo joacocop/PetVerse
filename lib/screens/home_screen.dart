@@ -10,6 +10,7 @@ import 'adoptions_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
 import '../providers/notification_provider.dart';
+import '../widgets/install_button.dart';
 
 /// Contenedor principal después de autenticarse.
 class HomeScreen extends StatefulWidget {
@@ -61,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text(AppConstants.appName),
         actions: [
+          const InstallButton(),
           IconButton(
             tooltip: 'Notificaciones',
             icon: const Icon(Icons.notifications_outlined),
@@ -81,42 +83,94 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          ProfileScreen(user: user),
-          FeedScreen(user: user),
-          AdoptionsScreen(key: ValueKey('adoptions-${user.id}'), user: user),
-          ChatsScreen(key: ValueKey('chats-${user.id}'), user: user),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final content = IndexedStack(
+            index: _selectedIndex,
+            children: [
+              ProfileScreen(user: user),
+              FeedScreen(user: user),
+              AdoptionsScreen(
+                key: ValueKey('adoptions-${user.id}'),
+                user: user,
+              ),
+              ChatsScreen(key: ValueKey('chats-${user.id}'), user: user),
+            ],
+          );
+          if (constraints.maxWidth < 900) {
+            return SafeArea(top: false, child: content);
+          }
+          return Row(
+            children: [
+              NavigationRail(
+                selectedIndex: _selectedIndex,
+                extended: constraints.maxWidth >= 1280,
+                labelType: constraints.maxWidth >= 1280
+                    ? null
+                    : NavigationRailLabelType.all,
+                onDestinationSelected: (index) =>
+                    setState(() => _selectedIndex = index),
+                destinations: const [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.person_outline),
+                    selectedIcon: Icon(Icons.person),
+                    label: Text('Mi perfil'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.dynamic_feed_outlined),
+                    selectedIcon: Icon(Icons.dynamic_feed),
+                    label: Text('Feed'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.pets_outlined),
+                    selectedIcon: Icon(Icons.pets),
+                    label: Text('Adopciones'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.chat_bubble_outline),
+                    selectedIcon: Icon(Icons.chat_bubble),
+                    label: Text('Mensajes'),
+                  ),
+                ],
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: content),
+            ],
+          );
+        },
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) =>
-            setState(() => _selectedIndex = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Mi perfil',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.dynamic_feed_outlined),
-            selectedIcon: Icon(Icons.dynamic_feed),
-            label: 'Feed',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.pets_outlined),
-            selectedIcon: Icon(Icons.pets),
-            label: 'Adopciones',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Mensajes',
-          ),
-        ],
-      ),
+      bottomNavigationBar: MediaQuery.sizeOf(context).width >= 900
+          ? null
+          : NavigationBar(
+              labelBehavior: MediaQuery.sizeOf(context).width < 400
+                  ? NavigationDestinationLabelBehavior.onlyShowSelected
+                  : NavigationDestinationLabelBehavior.alwaysShow,
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: (index) =>
+                  setState(() => _selectedIndex = index),
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person),
+                  label: 'Mi perfil',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.dynamic_feed_outlined),
+                  selectedIcon: Icon(Icons.dynamic_feed),
+                  label: 'Feed',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.pets_outlined),
+                  selectedIcon: Icon(Icons.pets),
+                  label: 'Adopciones',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.chat_bubble_outline),
+                  selectedIcon: Icon(Icons.chat_bubble),
+                  label: 'Mensajes',
+                ),
+              ],
+            ),
     );
   }
 

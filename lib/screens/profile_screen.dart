@@ -7,6 +7,7 @@ import '../providers/pet_provider.dart';
 import '../providers/profile_provider.dart';
 import 'pet_form_screen.dart';
 import '../widgets/media_upload.dart';
+import '../widgets/gamification_card.dart';
 
 /// Pantalla de PV2 y PV3: perfil editable y mascotas del usuario.
 class ProfileScreen extends StatefulWidget {
@@ -67,7 +68,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final padding = constraints.maxWidth >= 900 ? 48.0 : 20.0;
+        final padding = constraints.maxWidth >= 900
+            ? 32.0
+            : constraints.maxWidth < 400
+            ? 12.0
+            : 20.0;
         return SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(padding, 24, padding, 40),
           child: Center(
@@ -77,6 +82,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _ProfileHero(user: widget.user),
+                  const SizedBox(height: 20),
+                  const GamificationCard(),
                   const SizedBox(height: 20),
                   _buildProfileCard(),
                   const SizedBox(height: 20),
@@ -191,15 +198,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
               children: [
-                Expanded(
-                  child: Text(
-                    'Mis mascotas',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                Text(
+                  'Mis mascotas',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 FilledButton.icon(
                   onPressed: () => _openPetForm(),
@@ -216,7 +225,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             else
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final columns = constraints.maxWidth >= 760 ? 3 : 1;
+                  final columns = constraints.maxWidth >= 880
+                      ? 3
+                      : constraints.maxWidth >= 550
+                      ? 2
+                      : 1;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -224,7 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisCount: columns,
                       crossAxisSpacing: 14,
                       mainAxisSpacing: 14,
-                      childAspectRatio: columns == 1 ? 3.6 : 1.45,
+                      mainAxisExtent: 170,
                     ),
                     itemCount: petsProvider.pets.length,
                     itemBuilder: (context, index) => _PetCard(
@@ -408,8 +421,14 @@ class _PetCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '${pet.typeLabel} · ${pet.breed.isEmpty ? 'Sin raza' : pet.breed}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                Text('${pet.age} años · ${pet.weight.toStringAsFixed(1)} kg'),
+                Text(
+                  '${pet.age} años · ${pet.weight.toStringAsFixed(1)} kg',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),

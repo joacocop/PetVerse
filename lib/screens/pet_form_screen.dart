@@ -90,6 +90,7 @@ class _PetFormScreenState extends State<PetFormScreen> {
                       ),
                       const SizedBox(height: 14),
                       DropdownButtonFormField<PetType>(
+                        isExpanded: true,
                         initialValue: _type,
                         decoration: const InputDecoration(
                           labelText: 'Tipo *',
@@ -118,9 +119,14 @@ class _PetFormScreenState extends State<PetFormScreen> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      Row(
+                      Flex(
+                        direction: MediaQuery.sizeOf(context).width < 550
+                            ? Axis.vertical
+                            : Axis.horizontal,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
+                          Flexible(
+                            fit: FlexFit.loose,
                             child: TextFormField(
                               controller: _ageController,
                               keyboardType: TextInputType.number,
@@ -136,8 +142,9 @@ class _PetFormScreenState extends State<PetFormScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
+                          const SizedBox(width: 14, height: 14),
+                          Flexible(
+                            fit: FlexFit.loose,
                             child: TextFormField(
                               controller: _weightController,
                               keyboardType:

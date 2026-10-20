@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/install_button.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
@@ -29,25 +30,31 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 400 ? 12 : 24,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 460),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(32),
+                padding: EdgeInsets.all(
+                  MediaQuery.sizeOf(context).width < 400 ? 18 : 32,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: InstallButton(),
+                      ),
                       const _BrandHeader(),
                       const SizedBox(height: 28),
                       Text(
                         'Iniciar sesión',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 8),
                       const Text('Dale a tus mascotas el lugar que merecen.'),
@@ -65,8 +72,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         validator: (value) =>
                             value != null && value.contains('@')
-                                ? null
-                                : 'Ingresa un email válido.',
+                            ? null
+                            : 'Ingresa un email válido.',
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -96,11 +103,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: auth.isBusy
                               ? null
                               : () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) =>
-                                          const ForgotPasswordScreen(),
-                                    ),
+                                  MaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        const ForgotPasswordScreen(),
                                   ),
+                                ),
                           child: const Text('¿Olvidaste tu contraseña?'),
                         ),
                       ),
@@ -110,8 +117,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: auth.isBusy
                             ? const SizedBox.square(
                                 dimension: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Ingresar'),
                       ),
@@ -119,13 +127,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       Row(
                         children: [
                           const Expanded(child: Divider()),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              isDemo
-                                  ? 'o prueba la demo con'
-                                  : 'o continúa con',
-                              style: Theme.of(context).textTheme.bodySmall,
+                          Flexible(
+                            flex: 4,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Text(
+                                isDemo
+                                    ? 'o prueba la demo con'
+                                    : 'o continúa con',
+                                style: Theme.of(context).textTheme.bodySmall,
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                           const Expanded(child: Divider()),
@@ -151,10 +165,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: auth.isBusy
                                 ? null
                                 : () => Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => const RegisterScreen(),
-                                      ),
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => const RegisterScreen(),
                                     ),
+                                  ),
                             child: const Text('Regístrate'),
                           ),
                         ],
@@ -165,7 +179,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           auth.errorMessage!,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              color: Theme.of(context).colorScheme.error),
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                         ),
                       ],
                     ],
@@ -184,9 +199,9 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     await context.read<AuthProvider>().signInWithEmail(
-          _emailController.text,
-          _passwordController.text,
-        );
+      _emailController.text,
+      _passwordController.text,
+    );
   }
 
   Future<void> _social() async {
@@ -218,11 +233,15 @@ class _BrandHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 14),
-        Text(
-          AppConstants.appName,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+        Flexible(
+          child: Text(
+            AppConstants.appName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
         ),
       ],
     );
