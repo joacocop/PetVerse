@@ -15,7 +15,7 @@ abstract interface class ProfileService {
 class FirestoreProfileService implements ProfileService {
   /// Crea el servicio con una instancia opcional de Firestore.
   FirestoreProfileService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -33,11 +33,21 @@ class FirestoreProfileService implements ProfileService {
   }
 
   @override
-  Future<void> saveProfile(UserProfile profile) {
-    return _users.doc(profile.id).set(
-          profile.toMap(),
-          SetOptions(merge: true),
-        );
+  Future<void> saveProfile(UserProfile profile) async {
+    final batch = _firestore.batch();
+    batch.set(_users.doc(profile.id), profile.toMap(), SetOptions(merge: true));
+    batch.set(_firestore.collection('publicProfiles').doc(profile.id), {
+      'name': profile.name.trim().isEmpty
+          ? 'Usuario'
+          : profile.name.trim().substring(
+              0,
+              profile.name.trim().length > 120
+                  ? 120
+                  : profile.name.trim().length,
+            ),
+      'photoUrl': profile.photoUrl,
+    });
+    await batch.commit();
   }
 }
 

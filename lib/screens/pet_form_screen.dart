@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/pet.dart';
 import '../providers/auth_provider.dart';
 import '../providers/pet_provider.dart';
+import '../widgets/media_upload.dart';
 
 /// Formulario de alta y edición de mascotas de PV3.
 class PetFormScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _PetFormScreenState extends State<PetFormScreen> {
   late final TextEditingController _photosController;
   late final TextEditingController _bioController;
   late PetType _type;
+  bool _uploading = false;
 
   @override
   void initState() {
@@ -33,13 +35,15 @@ class _PetFormScreenState extends State<PetFormScreen> {
     final pet = widget.pet;
     _nameController = TextEditingController(text: pet?.name ?? '');
     _breedController = TextEditingController(text: pet?.breed ?? '');
-    _ageController =
-        TextEditingController(text: pet == null ? '' : '${pet.age}');
+    _ageController = TextEditingController(
+      text: pet == null ? '' : '${pet.age}',
+    );
     _weightController = TextEditingController(
       text: pet == null ? '' : pet.weight.toStringAsFixed(1),
     );
-    _photosController =
-        TextEditingController(text: pet?.photos.join(', ') ?? '');
+    _photosController = TextEditingController(
+      text: pet?.photos.join(', ') ?? '',
+    );
     _bioController = TextEditingController(text: pet?.bio ?? '');
     _type = pet?.type ?? PetType.dog;
   }
@@ -49,8 +53,9 @@ class _PetFormScreenState extends State<PetFormScreen> {
     final provider = context.watch<PetProvider>();
     final isEditing = widget.pet != null;
     return Scaffold(
-      appBar:
-          AppBar(title: Text(isEditing ? 'Editar mascota' : 'Agregar mascota')),
+      appBar: AppBar(
+        title: Text(isEditing ? 'Editar mascota' : 'Agregar mascota'),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -68,10 +73,8 @@ class _PetFormScreenState extends State<PetFormScreen> {
                         isEditing
                             ? 'Actualiza los datos'
                             : 'Presenta a tu mascota',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -82,8 +85,8 @@ class _PetFormScreenState extends State<PetFormScreen> {
                         ),
                         validator: (value) =>
                             value != null && value.trim().isNotEmpty
-                                ? null
-                                : 'Ingresa un nombre.',
+                            ? null
+                            : 'Ingresa un nombre.',
                       ),
                       const SizedBox(height: 14),
                       DropdownButtonFormField<PetType>(
@@ -139,7 +142,8 @@ class _PetFormScreenState extends State<PetFormScreen> {
                               controller: _weightController,
                               keyboardType:
                                   const TextInputType.numberWithOptions(
-                                      decimal: true),
+                                    decimal: true,
+                                  ),
                               decoration: const InputDecoration(
                                 labelText: 'Peso (kg) *',
                                 prefixIcon: Icon(Icons.monitor_weight_outlined),
@@ -179,24 +183,41 @@ class _PetFormScreenState extends State<PetFormScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      MediaUpload(
+                        uid: context.read<AuthProvider>().user!.id,
+                        imagesOnly: true,
+                        onBusy: (value) => setState(() => _uploading = value),
+                        onUploaded: (url, _) {
+                          _photosController.text = [
+                            if (_photosController.text.trim().isNotEmpty)
+                              _photosController.text.trim(),
+                            url,
+                          ].join(', ');
+                        },
+                      ),
                       FilledButton.icon(
-                        onPressed: provider.isSaving ? null : _save,
+                        onPressed: _uploading || provider.isSaving
+                            ? null
+                            : _save,
                         icon: provider.isSaving
                             ? const SizedBox.square(
                                 dimension: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.check),
                         label: Text(
-                            isEditing ? 'Guardar mascota' : 'Agregar mascota'),
+                          isEditing ? 'Guardar mascota' : 'Agregar mascota',
+                        ),
                       ),
                       if (provider.errorMessage != null) ...[
                         const SizedBox(height: 12),
                         Text(
                           provider.errorMessage!,
                           style: TextStyle(
-                              color: Theme.of(context).colorScheme.error),
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                         ),
                       ],
                     ],
@@ -241,10 +262,10 @@ class _PetFormScreenState extends State<PetFormScreen> {
   }
 
   String _typeLabel(PetType type) => switch (type) {
-        PetType.dog => 'Perro',
-        PetType.cat => 'Gato',
-        PetType.other => 'Otro',
-      };
+    PetType.dog => 'Perro',
+    PetType.cat => 'Gato',
+    PetType.other => 'Otro',
+  };
 
   @override
   void dispose() {

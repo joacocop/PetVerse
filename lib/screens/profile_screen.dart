@@ -6,6 +6,7 @@ import '../models/pet.dart';
 import '../providers/pet_provider.dart';
 import '../providers/profile_provider.dart';
 import 'pet_form_screen.dart';
+import '../widgets/media_upload.dart';
 
 /// Pantalla de PV2 y PV3: perfil editable y mascotas del usuario.
 class ProfileScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _photoController = TextEditingController();
   final _bioController = TextEditingController();
   String? _loadedUserId;
+  bool _uploading = false;
 
   @override
   void didChangeDependencies() {
@@ -108,9 +110,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Text(
                 'Editar perfil',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 18),
               TextFormField(
@@ -146,10 +148,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 8),
+              MediaUpload(
+                uid: widget.user.id,
+                imagesOnly: true,
+                onBusy: (value) => setState(() => _uploading = value),
+                onUploaded: (url, _) => _photoController.text = url,
+              ),
               Align(
                 alignment: Alignment.centerRight,
                 child: FilledButton.icon(
-                  onPressed: profileProvider.isSaving ? null : _saveProfile,
+                  onPressed: _uploading || profileProvider.isSaving
+                      ? null
+                      : _saveProfile,
                   icon: profileProvider.isSaving
                       ? const SizedBox.square(
                           dimension: 18,
@@ -187,8 +197,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Text(
                     'Mis mascotas',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 FilledButton.icon(
@@ -243,14 +253,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
     final success = await context.read<ProfileProvider>().saveProfile(
-          name: _nameController.text,
-          photoUrl: _photoController.text,
-          bio: _bioController.text,
-        );
+      name: _nameController.text,
+      photoUrl: _photoController.text,
+      bio: _bioController.text,
+    );
     if (mounted && success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Perfil actualizado.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Perfil actualizado.')));
     }
   }
 
@@ -318,8 +328,8 @@ class _ProfileHero extends StatelessWidget {
               Text(
                 'Hola, ${user.displayName?.isNotEmpty == true ? user.displayName : 'amigo'}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 4),
               Text(user.email),
@@ -378,8 +388,9 @@ class _PetCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundImage:
-                pet.photos.isEmpty ? null : NetworkImage(pet.photos.first),
+            backgroundImage: pet.photos.isEmpty
+                ? null
+                : NetworkImage(pet.photos.first),
             child: pet.photos.isEmpty ? const Icon(Icons.pets) : null,
           ),
           const SizedBox(width: 12),
@@ -396,7 +407,8 @@ class _PetCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                    '${pet.typeLabel} · ${pet.breed.isEmpty ? 'Sin raza' : pet.breed}'),
+                  '${pet.typeLabel} · ${pet.breed.isEmpty ? 'Sin raza' : pet.breed}',
+                ),
                 Text('${pet.age} años · ${pet.weight.toStringAsFixed(1)} kg'),
               ],
             ),

@@ -14,13 +14,22 @@ Red social para mascotas construida con Flutter Web, Firebase y Provider.
   sincronizado en tiempo real. El doble toque siempre da like; el botón permite quitarlo.
 - PV6: agregar, ver y eliminar comentarios propios en tiempo real, con confirmación
   antes de borrar. Los comentarios de otras personas no se pueden eliminar.
+- PV7: grilla de adopciones, filtros combinados por tipo/edad/ubicación, detalle,
+  publicación/cierre de avisos propios y formulario de contacto por chat privado.
+- PV8: selector de imágenes/videos del dispositivo, validación, progreso y cancelación
+  de subida a Storage. **Implementado, pero desactivado en producción mientras
+  se mantenga el proyecto sin facturación**, por decisión del usuario.
+- PV9: directorio público mínimo, chat 1 a 1 e historial privado en Firestore.
+- PV10: registro FCM voluntario, token por dispositivo, worker web, avisos en primer
+  plano e historial; backend de likes/comentarios/mensajes preparado en `functions/`.
+  **No hay envío automático real hasta desplegar las funciones (requiere Blaze).**
 - Sin configuración de Firebase, los PV funcionan en modo demo con datos
-  temporales en memoria. La persistencia real de PV2 y PV3 requiere Firestore.
+  temporales en memoria, excepto subidas y push, que no se simulan como reales.
 
 Las fotos de PV3 y los medios de PV4 se ingresan como URLs directas. Los videos
 usan el reproductor de Flutter, con reproducción/pausa, sonido y barra de progreso.
-La selección de archivos del dispositivo y la subida a Firebase Storage con
-progreso quedan reservadas para PV8, tal como separa la consigna. Los enlaces
+La selección y subida de archivos está implementada en PV8, y se conserva la
+opción de URLs para trabajar sin Storage. Los enlaces
 deben ser accesibles por el navegador y permitir su carga desde la app; un enlace
 a una página de YouTube, por ejemplo, no es un archivo de video directo.
 

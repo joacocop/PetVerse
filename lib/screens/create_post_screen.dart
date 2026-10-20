@@ -7,6 +7,7 @@ import '../providers/feed_provider.dart';
 import '../providers/pet_provider.dart';
 import '../widgets/feed_author.dart';
 import '../widgets/post_media.dart';
+import '../widgets/media_upload.dart';
 import 'pet_form_screen.dart';
 
 /// Crea una publicación asociada a una mascota del usuario.
@@ -25,6 +26,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   PostMediaType _type = PostMediaType.image;
   String? _petId;
   String? _previewUrl;
+  bool _uploading = false;
   PostMediaType _previewType = PostMediaType.image;
 
   Future<void> _publish() async {
@@ -45,9 +47,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     );
     if (mounted && success) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Publicación compartida.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Publicación compartida.')));
     }
   }
 
@@ -79,14 +81,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('Un nuevo momento de tu mascota',
-                          style: Theme.of(context).textTheme.headlineSmall),
+                      Text(
+                        'Un nuevo momento de tu mascota',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
                       const SizedBox(height: 20),
                       if (pets.isLoading)
                         const LinearProgressIndicator()
                       else if (pets.pets.isEmpty) ...[
                         const Text(
-                            'Registra una mascota para compartir su historia.'),
+                          'Registra una mascota para compartir su historia.',
+                        ),
                         OutlinedButton.icon(
                           onPressed: () => Navigator.push<void>(
                             context,
@@ -101,19 +106,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         DropdownButtonFormField<String>(
                           initialValue: _petId,
                           isExpanded: true,
-                          decoration:
-                              const InputDecoration(labelText: 'Mascota *'),
+                          decoration: const InputDecoration(
+                            labelText: 'Mascota *',
+                          ),
                           items: pets.pets
-                              .map((pet) => DropdownMenuItem(
-                                    value: pet.id,
-                                    child: Text(pet.name,
-                                        overflow: TextOverflow.ellipsis),
-                                  ))
+                              .map(
+                                (pet) => DropdownMenuItem(
+                                  value: pet.id,
+                                  child: Text(
+                                    pet.name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
                               .toList(),
                           onChanged: feed.isPublishing
                               ? null
                               : (value) => setState(() => _petId = value),
-                          validator: (value) => value == null ||
+                          validator: (value) =>
+                              value == null ||
                                   !pets.pets.any((pet) => pet.id == value)
                               ? 'Selecciona una mascota.'
                               : null,
@@ -132,15 +143,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<PostMediaType>(
+                        key: ValueKey(_type),
                         initialValue: _type,
                         decoration: const InputDecoration(
-                            labelText: 'Tipo de contenido'),
+                          labelText: 'Tipo de contenido',
+                        ),
                         items: const [
                           DropdownMenuItem(
-                              value: PostMediaType.image,
-                              child: Text('Imagen')),
+                            value: PostMediaType.image,
+                            child: Text('Imagen'),
+                          ),
                           DropdownMenuItem(
-                              value: PostMediaType.video, child: Text('Video')),
+                            value: PostMediaType.video,
+                            child: Text('Video'),
+                          ),
                         ],
                         onChanged: feed.isPublishing
                             ? null
@@ -162,6 +178,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           helperMaxLines: 3,
                         ),
                         validator: _validateUrl,
+                      ),
+                      MediaUpload(
+                        uid: widget.user.id,
+                        onBusy: (busy) => setState(() => _uploading = busy),
+                        onUploaded: (url, video) => setState(() {
+                          _mediaUrl.text = url;
+                          _type = video
+                              ? PostMediaType.video
+                              : PostMediaType.image;
+                          _previewUrl = url;
+                          _previewType = _type;
+                        }),
                       ),
                       Align(
                         alignment: Alignment.centerLeft,
@@ -188,18 +216,23 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         ),
                       const SizedBox(height: 16),
                       FilledButton.icon(
-                        onPressed: feed.isPublishing || pets.pets.isEmpty
+                        onPressed:
+                            _uploading || feed.isPublishing || pets.pets.isEmpty
                             ? null
                             : _publish,
                         icon: const Icon(Icons.send_outlined),
                         label: Text(
-                            feed.isPublishing ? 'Publicando…' : 'Publicar'),
+                          feed.isPublishing ? 'Publicando…' : 'Publicar',
+                        ),
                       ),
                       if (feed.actionError != null) ...[
                         const SizedBox(height: 12),
-                        Text(feed.actionError!,
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.error)),
+                        Text(
+                          feed.actionError!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
                       ],
                     ],
                   ),

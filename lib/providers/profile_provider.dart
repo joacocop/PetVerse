@@ -38,6 +38,8 @@ class ProfileProvider extends ChangeNotifier {
     try {
       final existing = await _service.getProfile(userId);
       if (existing != null) {
+        // Migra el directorio mínimo para cuentas creadas antes de PV9.
+        await _service.saveProfile(existing);
         _profile = existing;
       } else {
         final initial = UserProfile.initial(

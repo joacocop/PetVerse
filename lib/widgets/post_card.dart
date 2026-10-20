@@ -7,6 +7,7 @@ import '../providers/feed_provider.dart';
 import 'feed_author.dart';
 import 'post_comments.dart';
 import 'post_media.dart';
+import '../screens/chat_screen.dart';
 
 /// Publicación con reacción animada por botón o doble toque sobre el medio.
 class PostCard extends StatefulWidget {
@@ -39,9 +40,11 @@ class _PostCardState extends State<PostCard>
     final success = await feed.like(widget.post, liked: shouldLike);
     if (!mounted || success) return;
     _heart.reset();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(feed.actionError ?? 'No se pudo actualizar el like.'),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(feed.actionError ?? 'No se pudo actualizar el like.'),
+      ),
+    );
   }
 
   @override
@@ -66,15 +69,37 @@ class _PostCardState extends State<PostCard>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(post.authorName,
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      Text(
+                        post.authorName,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                       Text('Con ${post.petName}'),
-                      Text(feedDate(post.createdAt),
-                          style: Theme.of(context).textTheme.bodySmall),
+                      Text(
+                        feedDate(post.createdAt),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ],
                   ),
                 ),
-                const Icon(Icons.pets_outlined),
+                if (post.authorId != widget.user.id)
+                  IconButton(
+                    tooltip: 'Escribir a ${post.authorName}',
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    onPressed: () async {
+                      try {
+                        await openConversation(
+                          context,
+                          widget.user,
+                          post.authorId,
+                          post.authorName,
+                        );
+                      } on Object {
+                        /* Error mostrado por el helper. */
+                      }
+                    },
+                  )
+                else
+                  const Icon(Icons.pets_outlined),
               ],
             ),
           ),
@@ -96,10 +121,15 @@ class _PostCardState extends State<PostCard>
                       child: ScaleTransition(
                         scale: Tween<double>(begin: 0.5, end: 1.15).animate(
                           CurvedAnimation(
-                              parent: _heart, curve: Curves.easeOutBack),
+                            parent: _heart,
+                            curve: Curves.easeOutBack,
+                          ),
                         ),
-                        child: const Icon(Icons.favorite,
-                            size: 96, color: Color(0xFFFF6B35)),
+                        child: const Icon(
+                          Icons.favorite,
+                          size: 96,
+                          color: Color(0xFFFF6B35),
+                        ),
                       ),
                     ),
                   ),
@@ -129,20 +159,24 @@ class _PostCardState extends State<PostCard>
                     child: Icon(
                       liked ? Icons.favorite : Icons.favorite_border,
                       key: ValueKey(liked),
-                      color:
-                          liked ? Theme.of(context).colorScheme.primary : null,
+                      color: liked
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
                     ),
                   ),
                 ),
-                Text('${post.likeCount} me gusta',
-                    key: ValueKey('like-count-${post.id}')),
+                Text(
+                  '${post.likeCount} me gusta',
+                  key: ValueKey('like-count-${post.id}'),
+                ),
                 TextButton.icon(
                   key: ValueKey('comments-${post.id}'),
                   onPressed: () =>
                       setState(() => _showComments = !_showComments),
                   icon: const Icon(Icons.mode_comment_outlined),
                   label: Text(
-                      _showComments ? 'Ocultar comentarios' : 'Comentarios'),
+                    _showComments ? 'Ocultar comentarios' : 'Comentarios',
+                  ),
                 ),
               ],
             ),

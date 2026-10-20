@@ -4,7 +4,7 @@ const { before, after, beforeEach, test } = require('node:test');
 const { strict: assert } = require('node:assert');
 const { initializeTestEnvironment, assertSucceeds, assertFails } = require('@firebase/rules-unit-testing');
 const { doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, collection,
-  query, orderBy, arrayUnion, arrayRemove, serverTimestamp, onSnapshot } = require('firebase/firestore');
+  query, orderBy, where, writeBatch, arrayUnion, arrayRemove, serverTimestamp, onSnapshot } = require('firebase/firestore');
 
 let env;
 const post = () => ({
@@ -33,6 +33,69 @@ beforeEach(async () => {
     await setDoc(doc(context.firestore(), 'users/alice/pets/luna'), { name: 'Luna' });
   });
   await assertSucceeds(setDoc(postRef(db('alice')), post()));
+});
+
+const adoption = () => ({ ownerId: 'alice', petId: 'luna', name: 'Luna', type: 'dog',
+  breed: '', age: 2, weight: 8, photos: [], bio: 'Tranquila', ownerName: 'Alice',
+  location: 'Córdoba', requirements: 'Hogar responsable', active: true, createdAt: serverTimestamp() });
+const chatData = () => ({ participants: ['alice', 'bob'], createdAt: serverTimestamp(),
+  updatedAt: serverTimestamp(), lastText: '', lastSenderId: '', lastMessageId: '' });
+function sendMessage(client, senderId, text, messageId = 'm1') {
+  const batch = writeBatch(client);
+  batch.set(doc(client, `chats/c1/messages/${messageId}`), { senderId, text, timestamp: serverTimestamp() });
+  batch.update(doc(client, 'chats/c1'), { lastText: text, lastSenderId: senderId,
+    lastMessageId: messageId, updatedAt: serverTimestamp() });
+  return batch.commit();
+}
+
+test('Adopciones: publicar mascota propia, filtros públicos autenticados y cierre exclusivo', async () => {
+  const alice = db('alice'); const bob = db('bob');
+  await assertSucceeds(setDoc(doc(alice, 'adoptions/a1'), adoption()));
+  await assertSucceeds(getDocs(query(collection(bob, 'adoptions'), orderBy('createdAt', 'desc'))));
+  await assertFails(setDoc(doc(bob, 'adoptions/fake'), { ...adoption(), ownerId: 'bob' }));
+  await assertFails(updateDoc(doc(bob, 'adoptions/a1'), { active: false }));
+  await assertFails(updateDoc(doc(alice, 'adoptions/a1'), { ownerId: 'bob' }));
+  await assertFails(setDoc(doc(alice, 'adoptions/invalid'), { ...adoption(), age: -1 }));
+  await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), 'adoptions/a1')));
+  await assertSucceeds(updateDoc(doc(alice, 'adoptions/a1'), { active: false }));
+});
+
+test('Directorio mínimo público; emails, tokens e historial de avisos privados', async () => {
+  const alice = db('alice'); const bob = db('bob');
+  await assertSucceeds(setDoc(doc(alice, 'publicProfiles/alice'), { name: 'Alice', photoUrl: '' }));
+  await assertSucceeds(getDocs(collection(bob, 'publicProfiles')));
+  await assertFails(setDoc(doc(bob, 'publicProfiles/alice'), { name: 'Falso', photoUrl: '' }));
+  await assertFails(setDoc(doc(alice, 'publicProfiles/alice'), { name: 'Alice', photoUrl: '', email: 'privado@example.com' }));
+  await assertSucceeds(setDoc(doc(alice, 'users/alice/devices/d1'), {
+    token: 'fake-token-only-for-test', updatedAt: serverTimestamp(), platform: 'web' }));
+  await assertFails(getDoc(doc(bob, 'users/alice/devices/d1')));
+  await assertFails(setDoc(doc(alice, 'users/alice/notifications/n1'), { title: 'Falso' }));
+  await assertSucceeds(getDocs(collection(alice, 'users/alice/notifications')));
+  await assertFails(getDocs(collection(bob, 'users/alice/notifications')));
+});
+
+test('Chats privados: solo dos participantes, remitente real y escritura atómica del historial', async () => {
+  const alice = db('alice'); const bob = db('bob'); const mallory = db('mallory');
+  await assertSucceeds(getDoc(doc(alice, 'chats/c1')));
+  await assertSucceeds(setDoc(doc(alice, 'chats/c1'), chatData()));
+  await assertSucceeds(getDoc(doc(bob, 'chats/c1')));
+  await assertSucceeds(getDocs(query(collection(bob, 'chats'), where('participants', 'array-contains', 'bob'))));
+  await assertFails(getDoc(doc(mallory, 'chats/c1')));
+  await assertFails(getDocs(collection(mallory, 'chats')));
+  await assertFails(updateDoc(doc(alice, 'chats/c1'), { participants: ['alice', 'mallory'] }));
+  await assertFails(setDoc(doc(alice, 'chats/group'), { ...chatData(), participants: ['alice', 'bob', 'mallory'] }));
+  await assertFails(sendMessage(mallory, 'mallory', 'Intrusión'));
+  await assertFails(sendMessage(alice, 'bob', 'Falsificado'));
+  await assertFails(sendMessage(alice, 'alice', ''));
+  await assertFails(sendMessage(alice, 'alice', 'a'.repeat(2001)));
+  await assertFails(setDoc(doc(alice, 'chats/c1/messages/lone'), { senderId: 'alice', text: 'Sin resumen', timestamp: serverTimestamp() }));
+  await assertSucceeds(sendMessage(alice, 'alice', 'Hola Bob'));
+  await assertSucceeds(sendMessage(bob, 'bob', 'Hola Alice', 'm2'));
+  const history = await assertSucceeds(getDocs(query(collection(bob, 'chats/c1/messages'), orderBy('timestamp'))));
+  assert.deepEqual(history.docs.map(d => d.data().text), ['Hola Bob', 'Hola Alice']);
+  await assertFails(getDocs(collection(mallory, 'chats/c1/messages')));
+  await assertFails(updateDoc(doc(alice, 'chats/c1/messages/m1'), { text: 'Edición' }));
+  await assertFails(deleteDoc(doc(alice, 'chats/c1/messages/m1')));
 });
 
 test('La comunidad autenticada lee el feed; visitantes y mascotas ajenas no', async () => {

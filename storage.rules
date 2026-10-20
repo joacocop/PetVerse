@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{uid}/media/{fileName} {
+      allow read: if request.auth != null;
+      // Los enlaces de descarga compartidos en perfil/feed/adopción son públicos
+      // para quien los reciba. Nunca usar este contenedor para datos sensibles.
+      allow create: if request.auth != null && request.auth.uid == uid
+        && resource == null && (
+        (request.resource.contentType.matches('image/(jpeg|png|webp|gif)')
+          && request.resource.size > 0 && request.resource.size <= 10 * 1024 * 1024)
+        || (request.resource.contentType.matches('video/(mp4|webm|quicktime)')
+          && request.resource.size > 0 && request.resource.size <= 50 * 1024 * 1024));
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      // No se sobrescriben archivos existentes de otras publicaciones.
+    }
+  }
+}
